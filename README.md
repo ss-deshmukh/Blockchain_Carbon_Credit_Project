@@ -8,7 +8,7 @@ As described in SR15, scenarios that limit warming to 1.5°C with no or limited 
 
 These scenarios entail profound transitions in the global energy, industry, urban, and land systems that involve:
 
-• Full or near-full decarbonization for energy and industrial CO2 emissions achieving a zero-emissions energy supply system by mid-century.
+• Full or near-full de-carbonization for energy and industrial CO2 emissions achieving a zero-emissions energy supply system by mid-century.
 
 • Eliminating CO2  emissions associated with agriculture, forestry, and land-use
 
