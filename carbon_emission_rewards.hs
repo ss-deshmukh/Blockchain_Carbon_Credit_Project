@@ -61,12 +61,12 @@ PlutusTx.makeLift ''HashedString
 
 
 -----------------------------------------------------------------
--- | Carbon Credit Science Based Target Validation On-Chain Code
+-- Carbon Credit Science Based Target Validation On-Chain Code
 -----------------------------------------------------------------
 minLovelace :: Integer
 minLovelace = 2000000
 
--- | Carbon Credit Science Based Target Datum On-Chain Code
+-- Carbon Credit Science Based Target Datum On-Chain Code
 data SBTDatum = SBTDatum
     { beneficiary       :: !PaymentPubKeyHash           -- Public Hash Key Beneficiary Address 
     , set_BaselineYear  :: !Integer                     -- Baseline Year Science Based Target
@@ -81,7 +81,7 @@ data SBTDatum = SBTDatum
 PlutusTx.unstableMakeIsData ''SBTDatum
 PlutusTx.makeLift ''SBTDatum
 
--- | Carbon Credit Rewards Redeemer On-Chain Code
+-- Carbon Credit Rewards Redeemer On-Chain Code
 data CCRewardRedeemer = CCRewardRedeemer
     { val_cc         :: !Integer			-- Validated Value of Current Year Carbon Emission in Tonnage
     , val_erf        :: !Integer			-- Validated Value 0f Current Year Emission Reduction Factor
@@ -93,7 +93,7 @@ PlutusTx.unstableMakeIsData ''CCRewardRedeemer
 PlutusTx.makeLift ''CCRewardRedeemer
 
 
--- | Carbon Credit Emission Validation On-Chain Code
+-- Carbon Credit Emission Validation On-Chain Code
 -- Transaction Validation to released Carbon Rewards through beneficiarry address matching, pin rewards authorization matching, and 
 -- Carbon Emission shall be below Tonnage of Target Year Carbon Emission     
 {-# INLINABLE validateCCEmission #-}
@@ -110,13 +110,13 @@ validateCCEmission (SBTDatum phk _ _ ssbt serf _ dpnt) (CCRewardRedeemer valcc v
     signedByBeneficiary = txSignedBy info $ unPaymentPubKeyHash $ phk
 
 
--- | Datum and Redeemer parameter types
+-- Datum and Redeemer parameter types
 data CCRewards
 instance Scripts.ValidatorTypes CCRewards where
     type instance DatumType CCRewards = SBTDatum
     type instance RedeemerType CCRewards = CCRewardRedeemer
 
--- | The script instance is the compiled validator (ready to go onto the chain)
+-- The script instance is the compiled validator (ready to go onto the chain)
 ccRewardsInstance :: Scripts.TypedValidator CCRewards
 ccRewardsInstance = Scripts.mkTypedValidator @CCRewards
   $$(PlutusTx.compile [|| validateCCEmission ||])
@@ -126,14 +126,14 @@ ccRewardsInstance = Scripts.mkTypedValidator @CCRewards
 
 
 -----------------------------------------------------------------
--- | Carbon Credit Science Based Target Validation Off-Chain Code
+-- Carbon Credit Science Based Target Validation Off-Chain Code
 -----------------------------------------------------------------
 
--- | The Address of the Carbon Credit Science Based Target Rewards 
+-- The Address of the Carbon Credit Science Based Target Rewards 
 ccRewardsAddress :: Address
 ccRewardsAddress = Ledger.scriptAddress (Scripts.validatorScript ccRewardsInstance)
 
--- | Parameters for the "Carbon Credit Science Based Target Rewards" endpoint
+-- Parameters for the "Carbon Credit Science Based Target Rewards" endpoint
 data SBTParams = SBTParams
     { rewardBeneficiary  :: !PaymentPubKeyHash          -- Public Hash Key Beneficiary Address  
     , baselineYear       :: !Integer                    -- Baseline Year Science Based Target
@@ -145,7 +145,7 @@ data SBTParams = SBTParams
     }
     deriving (Generic, ToJSON, FromJSON, ToSchema)
 
---  | Parameters for the "Carbon Emission Validation" endpoint
+--  Parameters for the "Carbon Emission Validation" endpoint
 data CCEmissionParams = CCEmissionParams
     { val_Current_Emission_TonCO2E           :: !Integer    -- Validated Value of Current Year Carbon Emission in Tonnage
     , val_Current_Emission_Reduction_Factor  :: !Integer    -- Validated Value 0f Current Year Emission Reduction Factor
@@ -154,13 +154,13 @@ data CCEmissionParams = CCEmissionParams
     deriving stock (Prelude.Eq, Prelude.Show, Generic)
     deriving anyclass (FromJSON, ToJSON, ToSchema, ToArgument)
 
--- | The schema of the contract, with one endpoint to publish the problem with a Carbon Credit Science Based Target Rewards 
+-- The schema of the contract, with one endpoint to publish the problem with a Carbon Credit Science Based Target Rewards 
 --   and to submit Carbon Emission Validation Value
 type CCRewardsSchema =
             Endpoint "Science Base Target GHG Data Center and Funds Deposit" SBTParams    
         .\/ Endpoint "Updated Current GHG Data Center and Released Funds Deposit" CCEmissionParams
 
--- | The "Carbon Credit Science Based Target Rewards" contract endpoint.
+-- The "Carbon Credit Science Based Target Rewards" contract endpoint.
 ccsbtrewards :: AsContractError e => SBTParams -> Contract () CCRewardsSchema e ()
 ccsbtrewards (SBTParams bnf baseyear targetyear sbttarget erftarget rewardAmt pnt ) = do
     let datDatum = SBTDatum
@@ -180,7 +180,7 @@ ccsbtrewards (SBTParams bnf baseyear targetyear sbttarget erftarget rewardAmt pn
     logInfo @String $ printf "Science Based Target Carbon Credit Emission is %d TonCO2e"  (sbttarget * erftarget)
     logInfo @String $ printf "Carbon Credit Bonus Available Funds of %d and Token Rewards to be credited to Company with below Carbon Emission SBT Achievement on Target Year" rewardAmt
 
--- | The "Carbon Emission Validation" contract endpoint.
+-- The "Carbon Emission Validation" contract endpoint.
 carbonemissionupdate :: AsContractError e => CCEmissionParams -> Contract () CCRewardsSchema e ()
 carbonemissionupdate (CCEmissionParams valccemission targeterfvalue pin_validation) = do
     onow   <- currentTime
@@ -206,7 +206,7 @@ carbonemissionupdate (CCEmissionParams valccemission targeterfvalue pin_validati
           Nothing -> False
         hasCorrectDatum _ = False
 
--- | Carbon Credit Science Base Target Rewards endpoints.
+-- Carbon Credit Science Base Target Rewards endpoints.
 endpoints :: AsContractError e => Contract () CCRewardsSchema e ()
 endpoints = awaitPromise (ccsbtrewards' `select` carbonemissionupdate') >> endpoints
   where
